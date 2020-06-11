@@ -1,0 +1,33 @@
+name: Docker image build push
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:    
+    - master
+
+jobs:
+  docker_build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+      if: github.event_name == 'pull_request' && github.event_name != 'schedule'
+    - name: Build ${{ matrix.dir }}
+      if: github.event_name == 'pull_request' && github.event_name != 'schedule'
+      run: |
+        IMAGE_NAME=poad/docker-gnu-cobol:latest && \
+        docker build --rm -t ${IMAGE_NAME} .
+  docker_push:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+      if: github.event_name != 'pull_request' && github.event_name != 'schedule' && env.CHANGE_STATE != 'changed'
+    - name: Build latest and push
+      if: github.event_name != 'pull_request' && github.event_name != 'schedule' && env.CHANGE_STATE != 'changed'
+      run: |
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u poad --password-stdin && \
+        IMAGE_NAME=poad/docker-gnu-cobol:latest && \
+        docker build --rm -t ${IMAGE_NAME} . && \
+        docker push ${IMAGE_NAME}
