@@ -15,4 +15,4 @@ RUN groupadd -g 1000 cobol \
 
 WORKDIR /work
 
-CMD [ "coboc --version" ]
+CMD [ "coboc", "--version" ]
